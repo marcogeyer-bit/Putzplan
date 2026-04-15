@@ -18,28 +18,16 @@
   }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; padding-bottom: 40px; -webkit-font-smoothing: antialiased; }
 
-/* PIN OVERLAY */
-.pin-overlay {
-display: none;
-position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-z-index: 500; align-items: center; justify-content: center;
-}
+/* PIN */
+.pin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
 .pin-overlay.visible { display: flex; }
-.pin-box {
-background: var(–white); border-radius: 16px;
-padding: 28px 24px; width: 280px; text-align: center;
-}
+.pin-box { background: var(–white); border-radius: 16px; padding: 28px 24px; width: 280px; text-align: center; }
 .pin-title { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 20px; }
 .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
 .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(–border); background: white; transition: background 0.15s; }
 .pin-dot.filled { background: var(–text); border-color: var(–text); }
 .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.pin-btn {
-background: var(–bg); border: none; border-radius: 10px;
-height: 52px; font-family: ‘DM Sans’, sans-serif; font-size: 20px; font-weight: 300;
-color: var(–text); cursor: pointer; -webkit-tap-highlight-color: transparent;
-transition: background 0.15s;
-}
+.pin-btn { background: var(–bg); border: none; border-radius: 10px; height: 52px; font-family: ‘DM Sans’, sans-serif; font-size: 20px; font-weight: 300; color: var(–text); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
 .pin-btn:active { background: var(–border); }
 .pin-btn.del { font-size: 14px; color: var(–muted); }
 .pin-error { font-size: 11px; color: var(–warn); margin-top: 12px; min-height: 16px; }
@@ -48,18 +36,15 @@ transition: background 0.15s;
 /* HEADER */
 .header { background: var(–white); border-bottom: 1px solid var(–border); padding: 26px 20px 18px; position: sticky; top: 0; z-index: 100; }
 .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
 .controls { display: flex; align-items: center; gap: 14px; }
 .reset-btn { background: none; border: none; font-family: ‘DM Sans’, sans-serif; font-size: 11px; color: var(–muted); cursor: pointer; padding: 0; letter-spacing: 0.04em; }
 .lang-toggle { display: flex; gap: 6px; align-items: center; }
 .flag-btn { border: 2px solid transparent; background: transparent; border-radius: 6px; padding: 2px; cursor: pointer; opacity: 0.4; line-height: 1; font-size: 22px; transition: border-color 0.18s, opacity 0.18s; }
 .flag-btn.active { border-color: var(–text); opacity: 1; }
-
-.admin-badge { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–arrival); background: var(–arrival-bg); border: 1px solid var(–arrival-border); border-radius: 4px; padding: 2px 6px; display: none; }
+.admin-badge { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–arrival); background: var(–arrival-bg); border: 1px solid var(–arrival-border); border-radius: 4px; padding: 2px 6px; display: none; margin-left: 6px; }
 .admin-badge.visible { display: inline-block; }
-
-.readonly-banner { background: #fffbf0; border: 1.5px solid #e8d87a; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #8a7a20; letter-spacing: 0.03em; text-align: center; display: none; }
-.readonly-banner.visible { display: block; }
+.readonly-banner { background: #fffbf0; border: 1.5px solid #e8d87a; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #8a7a20; text-align: center; }
 
 .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
 .date-card { border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; transition: opacity 0.25s; }
@@ -69,8 +54,8 @@ transition: background 0.15s;
 .date-label { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
 .date-card.arrival .date-label { color: var(–arrival); }
 .date-card.departure .date-label { color: var(–departure); }
-.date-input { border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 13px; font-weight: 400; color: var(–text); width: 100%; outline: none; padding: 0; }
-.date-input:disabled { opacity: 0.5; }
+.date-input { border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 13px; color: var(–text); width: 100%; outline: none; padding: 0; }
+.date-input:disabled { opacity: 0.5; pointer-events: none; }
 
 .progress-row { display: flex; align-items: center; gap: 12px; }
 .progress-bar { flex: 1; height: 2px; background: var(–border); border-radius: 2px; overflow: hidden; }
@@ -102,10 +87,10 @@ transition: background 0.15s;
 .section.collapsed .section-body { display: none; }
 .phase-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–muted); padding: 10px 16px 2px; }
 
-.task { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(–border); background: var(–inactive-bg); transition: background 0.15s; }
+/* Tasks — ALWAYS have click handler, cursor shows if admin */
+.task { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(–border); background: var(–inactive-bg); transition: background 0.15s; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
 .task:last-child { border-bottom: none; }
-.task.admin { cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
-.task.admin:active { background: #f0efec; }
+.task:active { background: #f0efec; }
 .task.checked { background: var(–white); }
 .cb { width: 18px; height: 18px; border: 1.5px solid var(–inactive); border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.18s; }
 .task.checked .cb { background: var(–text); border-color: var(–text); }
@@ -121,11 +106,9 @@ transition: background 0.15s;
 </head>
 <body>
 
-<!-- PIN OVERLAY -->
-
 <div class="pin-overlay" id="pin-overlay">
   <div class="pin-box">
-    <div class="pin-title" id="pin-title">Admin PIN</div>
+    <div class="pin-title">Admin PIN</div>
     <div class="pin-dots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
@@ -142,23 +125,23 @@ transition: background 0.15s;
       <button class="pin-btn" onclick="pinPress('7')">7</button>
       <button class="pin-btn" onclick="pinPress('8')">8</button>
       <button class="pin-btn" onclick="pinPress('9')">9</button>
-      <button class="pin-btn" onclick="pinPress('')"></button>
+      <button class="pin-btn"></button>
       <button class="pin-btn" onclick="pinPress('0')">0</button>
       <button class="pin-btn del" onclick="pinDel()">⌫</button>
     </div>
     <div class="pin-error" id="pin-error"></div>
-    <div class="pin-cancel" onclick="closePin()" id="pin-cancel">Abbrechen</div>
+    <div class="pin-cancel" onclick="closePin()">Abbrechen</div>
   </div>
 </div>
 
 <div class="header">
   <div class="top-row">
-    <div style="display:flex;align-items:center;gap:8px">
+    <div style="display:flex;align-items:center">
       <span class="wordmark" id="wordmark" onclick="openPin()">Plan de Limpieza</span>
       <span class="admin-badge" id="admin-badge">Admin</span>
     </div>
     <div class="controls">
-      <button class="reset-btn" id="reset-btn" onclick="resetAll()" style="display:none">Reset</button>
+      <button class="reset-btn" id="reset-btn" onclick="resetAll()">Reset</button>
       <div class="lang-toggle">
         <button class="flag-btn" id="btn-de" onclick="setLang('de')">🇩🇪</button>
         <button class="flag-btn active" id="btn-es" onclick="setLang('es')">🇪🇸</button>
@@ -169,11 +152,11 @@ transition: background 0.15s;
   <div class="date-row">
     <div class="date-card arrival" id="card-arrival">
       <div class="date-label"><span>✈️</span><span id="lbl-arrival">Llegada</span></div>
-      <input class="date-input" type="date" id="date-arrival" oninput="onDateInput('arrival')">
+      <input class="date-input" type="date" id="date-arrival" oninput="onDateInput('arrival')" disabled>
     </div>
     <div class="date-card departure" id="card-departure">
       <div class="date-label"><span>🧳</span><span id="lbl-departure">Salida</span></div>
-      <input class="date-input" type="date" id="date-departure" oninput="onDateInput('departure')">
+      <input class="date-input" type="date" id="date-departure" oninput="onDateInput('departure')" disabled>
     </div>
   </div>
   <div class="progress-row">
@@ -210,7 +193,6 @@ var mode = null;
 var checked = {};
 var collapsed = {};
 
-// PIN functions
 function openPin() {
   if (isAdmin) { lockAdmin(); return; }
   pinEntry = '';
@@ -226,8 +208,7 @@ function closePin() {
 }
 
 function pinPress(digit) {
-  if (!digit) return;
-  if (pinEntry.length >= 4) return;
+  if (!digit || pinEntry.length >= 4) return;
   pinEntry += digit;
   updatePinDots();
   if (pinEntry.length === 4) {
@@ -236,9 +217,12 @@ function pinPress(digit) {
         isAdmin = true;
         closePin();
         applyAdminState();
-        render();
+        // Update all task cursor styles without full re-render
+        document.querySelectorAll('.task').forEach(function(t) {
+          t.style.cursor = 'pointer';
+        });
       } else {
-        document.getElementById('pin-error').textContent = lang === 'de' ? 'Falscher PIN' : 'PIN incorrecto';
+        document.getElementById('pin-error').textContent = 'PIN incorrecto';
         pinEntry = '';
         updatePinDots();
       }
@@ -262,29 +246,14 @@ function updatePinDots() {
 function lockAdmin() {
   isAdmin = false;
   applyAdminState();
-  render();
 }
 
 function applyAdminState() {
-  var resetBtn = document.getElementById('reset-btn');
-  var banner = document.getElementById('readonly-banner');
-  var badge = document.getElementById('admin-badge');
-  var arrInput = document.getElementById('date-arrival');
-  var depInput = document.getElementById('date-departure');
-
-  if (isAdmin) {
-    resetBtn.style.display = 'block';
-    banner.classList.remove('visible');
-    badge.classList.add('visible');
-    arrInput.disabled = false;
-    depInput.disabled = false;
-  } else {
-    resetBtn.style.display = 'none';
-    banner.classList.add('visible');
-    badge.classList.remove('visible');
-    arrInput.disabled = true;
-    depInput.disabled = true;
-  }
+  document.getElementById('admin-badge').classList.toggle('visible', isAdmin);
+  document.getElementById('readonly-banner').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('reset-btn').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('date-arrival').disabled = !isAdmin;
+  document.getElementById('date-departure').disabled = !isAdmin;
 }
 
 var SECTIONS = {
@@ -329,17 +298,26 @@ var UI = {
     today: 'Heute', tomorrow: 'Morgen', yesterday: 'Gestern',
     inDays: function(n){ return 'in ' + n + ' Tagen'; },
     daysAgo: function(n){ return 'vor ' + n + ' Tagen'; },
-    fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    readonly: '👁 Nur Ansicht', pinTitle: 'Admin PIN'
+    fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); }
   },
   es: { wordmark: 'Plan de Limpieza', reset: 'Reset', lblArrival: 'Llegada', lblDeparture: 'Salida',
     today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
     inDays: function(n){ return 'en ' + n + ' días'; },
     daysAgo: function(n){ return 'hace ' + n + ' días'; },
-    fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    readonly: '👁 Solo lectura', pinTitle: 'Admin PIN'
+    fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); }
   }
 };
+
+// KEY FIX: task click handler always checks isAdmin at call time
+function handleTaskClick(id, e) {
+  e.stopPropagation();
+  if (!isAdmin) return; // guard here, not at render time
+  checked[id] = !checked[id];
+  var el = document.getElementById('t-' + id);
+  if (el) el.classList.toggle('checked', checked[id]);
+  refreshCount(parseInt(id.split('-')[0]));
+  updateProgress();
+}
 
 function onDateInput(which) {
   if (!isAdmin) return;
@@ -398,15 +376,6 @@ function toggleCollapse(si) {
   if (sec) sec.classList.toggle('collapsed', !!collapsed[si]);
 }
 
-function toggleTask(id) {
-  if (!isAdmin) return;
-  checked[id] = !checked[id];
-  var el = document.getElementById('t-' + id);
-  if (el) el.classList.toggle('checked', checked[id]);
-  refreshCount(parseInt(id.split('-')[0]));
-  updateProgress();
-}
-
 function refreshCount(si) {
   var sec = SECTIONS[lang][si];
   if (!sec) return;
@@ -448,21 +417,15 @@ function setLang(l) {
   lang = l;
   document.getElementById('btn-de').classList.toggle('active', l === 'de');
   document.getElementById('btn-es').classList.toggle('active', l === 'es');
-  applyUI();
-  updateBanners();
-  render();
-}
-
-function applyUI() {
-  var u = UI[lang];
+  var u = UI[l];
   document.getElementById('wordmark').textContent = u.wordmark;
   document.getElementById('reset-btn').textContent = u.reset;
   document.getElementById('lbl-arrival').textContent = u.lblArrival;
   document.getElementById('lbl-departure').textContent = u.lblDeparture;
   document.getElementById('banner-arrival-label').textContent = u.lblArrival;
   document.getElementById('banner-departure-label').textContent = u.lblDeparture;
-  document.getElementById('readonly-banner').textContent = u.readonly;
-  document.getElementById('pin-title').textContent = u.pinTitle;
+  updateBanners();
+  render();
 }
 
 function render() {
@@ -514,17 +477,16 @@ function render() {
         var task = ph.tasks[ti2];
         var id = si + '-' + pi2 + '-' + ti2;
         var el = document.createElement('div');
-        el.className = 'task' + (isAdmin ? ' admin' : '') + (checked[id] ? ' checked' : '');
+        el.className = 'task' + (checked[id] ? ' checked' : '');
         el.id = 't-' + id;
         el.innerHTML =
           '<div class="cb"><svg viewBox="0 0 10 8" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg></div>' +
           '<div class="task-body"><div class="task-text">' + task.text + '</div>' +
           (task.note ? '<span class="task-note">' + task.note + '</span>' : '') + '</div>';
-        if (isAdmin) {
-          (function(taskId) {
-            el.addEventListener('click', function(e) { e.stopPropagation(); toggleTask(taskId); });
-          })(id);
-        }
+        // ALWAYS attach listener — isAdmin checked inside handler
+        (function(taskId) {
+          el.addEventListener('click', function(e) { handleTaskClick(taskId, e); });
+        })(id);
         body.appendChild(el);
       }
     }
@@ -534,7 +496,14 @@ function render() {
   updateProgress();
 }
 
-applyUI();
+// Init
+var u0 = UI[lang];
+document.getElementById('wordmark').textContent = u0.wordmark;
+document.getElementById('reset-btn').textContent = u0.reset;
+document.getElementById('lbl-arrival').textContent = u0.lblArrival;
+document.getElementById('lbl-departure').textContent = u0.lblDeparture;
+document.getElementById('banner-arrival-label').textContent = u0.lblArrival;
+document.getElementById('banner-departure-label').textContent = u0.lblDeparture;
 applyAdminState();
 render();
 </script>
