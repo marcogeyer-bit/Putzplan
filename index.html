@@ -21,86 +21,78 @@
 /* PIN */
 .pin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
 .pin-overlay.visible { display: flex; }
-.pin-box { background: var(–white); border-radius: 16px; padding: 28px 24px; width: 280px; text-align: center; }
+.pin-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 280px; text-align: center; }
 .pin-title { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 20px; }
 .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
-.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(–border); background: white; transition: background 0.15s; }
-.pin-dot.filled { background: var(–text); border-color: var(–text); }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #e6e3de; background: white; }
+.pin-dot.filled { background: #1a1a1a; border-color: #1a1a1a; }
 .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.pin-btn { background: var(–bg); border: none; border-radius: 10px; height: 52px; font-family: ‘DM Sans’, sans-serif; font-size: 20px; font-weight: 300; color: var(–text); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
-.pin-btn:active { background: var(–border); }
-.pin-btn.del { font-size: 14px; color: var(–muted); }
-.pin-error { font-size: 11px; color: var(–warn); margin-top: 12px; min-height: 16px; }
-.pin-cancel { font-size: 11px; color: var(–muted); margin-top: 14px; cursor: pointer; }
+.pin-btn { background: #f4f3f1; border: none; border-radius: 10px; height: 52px; font-family: ‘DM Sans’, sans-serif; font-size: 20px; font-weight: 300; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pin-btn:active { background: #e6e3de; }
+.pin-btn.del { font-size: 14px; color: #bbb8b3; }
+.pin-error { font-size: 11px; color: #d4622a; margin-top: 12px; min-height: 16px; }
+.pin-cancel { font-size: 11px; color: #bbb8b3; margin-top: 14px; cursor: pointer; }
 
 /* HEADER */
-.header { background: var(–white); border-bottom: 1px solid var(–border); padding: 26px 20px 18px; position: sticky; top: 0; z-index: 100; }
+.header { background: #fff; border-bottom: 1px solid #e6e3de; padding: 26px 20px 18px; position: sticky; top: 0; z-index: 100; }
 .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
-.controls { display: flex; align-items: center; gap: 14px; }
-.reset-btn { background: none; border: none; font-family: ‘DM Sans’, sans-serif; font-size: 11px; color: var(–muted); cursor: pointer; padding: 0; letter-spacing: 0.04em; }
-.lang-toggle { display: flex; gap: 6px; align-items: center; }
-.flag-btn { border: 2px solid transparent; background: transparent; border-radius: 6px; padding: 2px; cursor: pointer; opacity: 0.4; line-height: 1; font-size: 22px; transition: border-color 0.18s, opacity 0.18s; }
-.flag-btn.active { border-color: var(–text); opacity: 1; }
-.admin-badge { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–arrival); background: var(–arrival-bg); border: 1px solid var(–arrival-border); border-radius: 4px; padding: 2px 6px; display: none; margin-left: 6px; }
+.admin-badge { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #2a6e3f; background: #f0f7f3; border: 1px solid #b6d9c3; border-radius: 4px; padding: 2px 6px; display: none; margin-left: 6px; }
 .admin-badge.visible { display: inline-block; }
+.controls { display: flex; align-items: center; gap: 14px; }
+.reset-btn { background: none; border: none; font-family: ‘DM Sans’, sans-serif; font-size: 11px; color: #bbb8b3; cursor: pointer; padding: 0; letter-spacing: 0.04em; display: none; }
+.lang-toggle { display: flex; gap: 6px; align-items: center; }
+.flag-btn { border: 2px solid transparent; background: transparent; border-radius: 6px; padding: 2px; cursor: pointer; opacity: 0.4; line-height: 1; font-size: 22px; }
+.flag-btn.active { border-color: #1a1a1a; opacity: 1; }
 .readonly-banner { background: #fffbf0; border: 1.5px solid #e8d87a; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #8a7a20; text-align: center; }
 
 .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-.date-card { border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; transition: opacity 0.25s; }
-.date-card.arrival { background: var(–arrival-bg); border: 1.5px solid var(–arrival-border); }
-.date-card.departure { background: var(–departure-bg); border: 1.5px solid var(–departure-border); }
+.date-card { border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }
+.date-card.arrival { background: #f0f7f3; border: 1.5px solid #b6d9c3; }
+.date-card.departure { background: #f0f4fa; border: 1.5px solid #b6c8e8; }
 .date-card.dimmed { opacity: 0.35; }
 .date-label { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
-.date-card.arrival .date-label { color: var(–arrival); }
-.date-card.departure .date-label { color: var(–departure); }
-.date-input { border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 13px; color: var(–text); width: 100%; outline: none; padding: 0; }
+.date-card.arrival .date-label { color: #2a6e3f; }
+.date-card.departure .date-label { color: #1a3a6e; }
+.date-input { border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 13px; color: #1a1a1a; width: 100%; outline: none; padding: 0; }
 .date-input:disabled { opacity: 0.5; pointer-events: none; }
 
 .progress-row { display: flex; align-items: center; gap: 12px; }
-.progress-bar { flex: 1; height: 2px; background: var(–border); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(–text); border-radius: 2px; transition: width 0.35s ease; width: 0%; }
-.progress-label { font-size: 11px; color: var(–muted); white-space: nowrap; min-width: 36px; text-align: right; }
+.progress-bar { flex: 1; height: 2px; background: #e6e3de; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: #1a1a1a; border-radius: 2px; width: 0%; }
+.progress-label { font-size: 11px; color: #bbb8b3; white-space: nowrap; min-width: 36px; text-align: right; }
 
 .content { max-width: 480px; margin: 0 auto; padding: 16px 16px 0; }
 
 .date-banner { border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; display: none; align-items: center; gap: 10px; }
 .date-banner.visible { display: flex; }
-.date-banner.arrival { background: var(–arrival-bg); border: 1.5px solid var(–arrival-border); }
-.date-banner.departure { background: var(–departure-bg); border: 1.5px solid var(–departure-border); }
+.date-banner.arrival { background: #f0f7f3; border: 1.5px solid #b6d9c3; }
+.date-banner.departure { background: #f0f4fa; border: 1.5px solid #b6c8e8; }
 .banner-icon { font-size: 20px; flex-shrink: 0; }
 .banner-text { flex: 1; }
 .banner-label { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
-.date-banner.arrival .banner-label { color: var(–arrival); }
-.date-banner.departure .banner-label { color: var(–departure); }
-.banner-date { font-size: 14px; font-weight: 500; color: var(–text); }
-.banner-days { font-size: 11px; color: var(–muted); margin-top: 1px; }
+.date-banner.arrival .banner-label { color: #2a6e3f; }
+.date-banner.departure .banner-label { color: #1a3a6e; }
+.banner-date { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+.banner-days { font-size: 11px; color: #bbb8b3; margin-top: 1px; }
 
-.section { background: var(–white); border: 1px solid var(–border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-.section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; border-bottom: 1px solid var(–border); }
+.section { background: #fff; border: 1px solid #e6e3de; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; border-bottom: 1px solid #e6e3de; }
 .section.collapsed .section-header { border-bottom: none; }
 .section-left { display: flex; align-items: center; gap: 8px; flex: 1; }
 .section-title { font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; }
-.section-count { font-size: 11px; color: var(–muted); }
-.collapse-icon { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(–muted); transition: transform 0.25s; }
+.section-count { font-size: 11px; color: #bbb8b3; }
+.collapse-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: #bbb8b3; transition: transform 0.2s; }
 .section.collapsed .collapse-icon { transform: rotate(-90deg); }
 .section.collapsed .section-body { display: none; }
-.phase-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–muted); padding: 10px 16px 2px; }
+.phase-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb8b3; padding: 10px 16px 2px; }
 
-/* Tasks — ALWAYS have click handler, cursor shows if admin */
-.task { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(–border); background: var(–inactive-bg); transition: background 0.15s; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+.task { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e6e3de; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
 .task:last-child { border-bottom: none; }
-.task:active { background: #f0efec; }
-.task.checked { background: var(–white); }
-.cb { width: 18px; height: 18px; border: 1.5px solid var(–inactive); border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.18s; }
-.task.checked .cb { background: var(–text); border-color: var(–text); }
-.cb svg { width: 10px; height: 10px; opacity: 0; transform: scale(0.5); transition: all 0.18s; }
-.task.checked .cb svg { opacity: 1; transform: scale(1); }
+.task-cb { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
 .task-body { flex: 1; }
-.task-text { font-size: 14px; font-weight: 300; line-height: 1.45; color: var(–inactive); transition: color 0.2s; }
-.task.checked .task-text { color: var(–text); font-weight: 400; }
-.task-note { display: block; font-size: 11px; color: var(–inactive); margin-top: 3px; }
-.task.checked .task-note { color: var(–warn); font-weight: 400; }
+.task-text { font-size: 14px; line-height: 1.45; }
+.task-note { display: block; font-size: 11px; margin-top: 3px; }
 </style>
 
 </head>
@@ -193,6 +185,41 @@ var mode = null;
 var checked = {};
 var collapsed = {};
 
+// Apply visual state directly to a task element — no CSS classes, pure inline styles
+function applyTaskStyle(el, isChecked) {
+  var cb = el.querySelector('.task-cb');
+  var txt = el.querySelector('.task-text');
+  var note = el.querySelector('.task-note');
+
+  if (isChecked) {
+    el.style.background = '#ffffff';
+    cb.style.background = '#1a1a1a';
+    cb.style.border = '1.5px solid #1a1a1a';
+    cb.innerHTML = '<svg viewBox="0 0 10 8" width="10" height="10" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg>';
+    txt.style.color = '#1a1a1a';
+    txt.style.fontWeight = '400';
+    if (note) note.style.color = '#d4622a';
+  } else {
+    el.style.background = '#f9f8f6';
+    cb.style.background = '#ffffff';
+    cb.style.border = '1.5px solid #d4d1cb';
+    cb.innerHTML = '';
+    txt.style.color = '#d4d1cb';
+    txt.style.fontWeight = '300';
+    if (note) note.style.color = '#d4d1cb';
+  }
+}
+
+function handleTaskClick(id, e) {
+  e.stopPropagation();
+  if (!isAdmin) return;
+  checked[id] = !checked[id];
+  var el = document.getElementById('t-' + id);
+  if (el) applyTaskStyle(el, checked[id]);
+  refreshCount(parseInt(id.split('-')[0]));
+  updateProgress();
+}
+
 function openPin() {
   if (isAdmin) { lockAdmin(); return; }
   pinEntry = '';
@@ -217,10 +244,6 @@ function pinPress(digit) {
         isAdmin = true;
         closePin();
         applyAdminState();
-        // Update all task cursor styles without full re-render
-        document.querySelectorAll('.task').forEach(function(t) {
-          t.style.cursor = 'pointer';
-        });
       } else {
         document.getElementById('pin-error').textContent = 'PIN incorrecto';
         pinEntry = '';
@@ -307,17 +330,6 @@ var UI = {
     fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); }
   }
 };
-
-// KEY FIX: task click handler always checks isAdmin at call time
-function handleTaskClick(id, e) {
-  e.stopPropagation();
-  if (!isAdmin) return; // guard here, not at render time
-  checked[id] = !checked[id];
-  var el = document.getElementById('t-' + id);
-  if (el) el.classList.toggle('checked', checked[id]);
-  refreshCount(parseInt(id.split('-')[0]));
-  updateProgress();
-}
 
 function onDateInput(which) {
   if (!isAdmin) return;
@@ -407,7 +419,10 @@ function updateProgress() {
 function resetAll() {
   if (!isAdmin) return;
   checked = {};
-  document.querySelectorAll('.task').forEach(function(t) { t.classList.remove('checked'); });
+  // Reset all task visuals
+  document.querySelectorAll('.task').forEach(function(el) {
+    applyTaskStyle(el, false);
+  });
   var sections = SECTIONS[lang];
   for (var si = 0; si < sections.length; si++) refreshCount(si);
   updateProgress();
@@ -476,17 +491,23 @@ function render() {
       for (var ti2 = 0; ti2 < ph.tasks.length; ti2++) {
         var task = ph.tasks[ti2];
         var id = si + '-' + pi2 + '-' + ti2;
+        var isChecked = !!checked[id];
+
         var el = document.createElement('div');
-        el.className = 'task' + (checked[id] ? ' checked' : '');
+        el.className = 'task';
         el.id = 't-' + id;
         el.innerHTML =
-          '<div class="cb"><svg viewBox="0 0 10 8" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg></div>' +
+          '<div class="task-cb"></div>' +
           '<div class="task-body"><div class="task-text">' + task.text + '</div>' +
           (task.note ? '<span class="task-note">' + task.note + '</span>' : '') + '</div>';
-        // ALWAYS attach listener — isAdmin checked inside handler
+
+        // Apply initial visual state immediately
+        applyTaskStyle(el, isChecked);
+
         (function(taskId) {
           el.addEventListener('click', function(e) { handleTaskClick(taskId, e); });
         })(id);
+
         body.appendChild(el);
       }
     }
@@ -499,11 +520,11 @@ function render() {
 // Init
 var u0 = UI[lang];
 document.getElementById('wordmark').textContent = u0.wordmark;
-document.getElementById('reset-btn').textContent = u0.reset;
 document.getElementById('lbl-arrival').textContent = u0.lblArrival;
 document.getElementById('lbl-departure').textContent = u0.lblDeparture;
 document.getElementById('banner-arrival-label').textContent = u0.lblArrival;
 document.getElementById('banner-departure-label').textContent = u0.lblDeparture;
+document.getElementById('reset-btn').textContent = u0.reset;
 applyAdminState();
 render();
 </script>
