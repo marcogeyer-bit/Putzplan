@@ -18,14 +18,45 @@
   }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; padding-bottom: 40px; -webkit-font-smoothing: antialiased; }
 
+/* PIN OVERLAY */
+.pin-overlay {
+display: none;
+position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+z-index: 500; align-items: center; justify-content: center;
+}
+.pin-overlay.visible { display: flex; }
+.pin-box {
+background: var(–white); border-radius: 16px;
+padding: 28px 24px; width: 280px; text-align: center;
+}
+.pin-title { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 20px; }
+.pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(–border); background: white; transition: background 0.15s; }
+.pin-dot.filled { background: var(–text); border-color: var(–text); }
+.pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pin-btn {
+background: var(–bg); border: none; border-radius: 10px;
+height: 52px; font-family: ‘DM Sans’, sans-serif; font-size: 20px; font-weight: 300;
+color: var(–text); cursor: pointer; -webkit-tap-highlight-color: transparent;
+transition: background 0.15s;
+}
+.pin-btn:active { background: var(–border); }
+.pin-btn.del { font-size: 14px; color: var(–muted); }
+.pin-error { font-size: 11px; color: var(–warn); margin-top: 12px; min-height: 16px; }
+.pin-cancel { font-size: 11px; color: var(–muted); margin-top: 14px; cursor: pointer; }
+
+/* HEADER */
 .header { background: var(–white); border-bottom: 1px solid var(–border); padding: 26px 20px 18px; position: sticky; top: 0; z-index: 100; }
 .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; }
+.wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .controls { display: flex; align-items: center; gap: 14px; }
 .reset-btn { background: none; border: none; font-family: ‘DM Sans’, sans-serif; font-size: 11px; color: var(–muted); cursor: pointer; padding: 0; letter-spacing: 0.04em; }
 .lang-toggle { display: flex; gap: 6px; align-items: center; }
 .flag-btn { border: 2px solid transparent; background: transparent; border-radius: 6px; padding: 2px; cursor: pointer; opacity: 0.4; line-height: 1; font-size: 22px; transition: border-color 0.18s, opacity 0.18s; }
 .flag-btn.active { border-color: var(–text); opacity: 1; }
+
+.admin-badge { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(–arrival); background: var(–arrival-bg); border: 1px solid var(–arrival-border); border-radius: 4px; padding: 2px 6px; display: none; }
+.admin-badge.visible { display: inline-block; }
 
 .readonly-banner { background: #fffbf0; border: 1.5px solid #e8d87a; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #8a7a20; letter-spacing: 0.03em; text-align: center; display: none; }
 .readonly-banner.visible { display: block; }
@@ -39,7 +70,7 @@
 .date-card.arrival .date-label { color: var(–arrival); }
 .date-card.departure .date-label { color: var(–departure); }
 .date-input { border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 13px; font-weight: 400; color: var(–text); width: 100%; outline: none; padding: 0; }
-.date-input:disabled { opacity: 0.5; cursor: default; }
+.date-input:disabled { opacity: 0.5; }
 
 .progress-row { display: flex; align-items: center; gap: 12px; }
 .progress-bar { flex: 1; height: 2px; background: var(–border); border-radius: 2px; overflow: hidden; }
@@ -90,9 +121,42 @@
 </head>
 <body>
 
+<!-- PIN OVERLAY -->
+
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-title" id="pin-title">Admin PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinPress('')"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-cancel" onclick="closePin()" id="pin-cancel">Abbrechen</div>
+  </div>
+</div>
+
 <div class="header">
   <div class="top-row">
-    <span class="wordmark" id="wordmark">Plan de Limpieza</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="wordmark" id="wordmark" onclick="openPin()">Plan de Limpieza</span>
+      <span class="admin-badge" id="admin-badge">Admin</span>
+    </div>
     <div class="controls">
       <button class="reset-btn" id="reset-btn" onclick="resetAll()" style="display:none">Reset</button>
       <div class="lang-toggle">
@@ -101,7 +165,7 @@
       </div>
     </div>
   </div>
-  <div class="readonly-banner" id="readonly-banner"></div>
+  <div class="readonly-banner" id="readonly-banner">👁 Solo lectura</div>
   <div class="date-row">
     <div class="date-card arrival" id="card-arrival">
       <div class="date-label"><span>✈️</span><span id="lbl-arrival">Llegada</span></div>
@@ -138,17 +202,90 @@
 </div>
 
 <script>
-// Admin detection — works with both ?admin=true and #admin
-var hash = window.location.hash;
-var search = window.location.search;
-var isAdmin = (search.indexOf('admin=true') !== -1) ||
-              (search.indexOf('admin%3Dtrue') !== -1) ||
-              (hash.indexOf('admin') !== -1);
-
+var ADMIN_PIN = '1967';
+var pinEntry = '';
+var isAdmin = false;
 var lang = 'es';
 var mode = null;
 var checked = {};
 var collapsed = {};
+
+// PIN functions
+function openPin() {
+  if (isAdmin) { lockAdmin(); return; }
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-overlay').classList.add('visible');
+}
+
+function closePin() {
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('pin-overlay').classList.remove('visible');
+}
+
+function pinPress(digit) {
+  if (!digit) return;
+  if (pinEntry.length >= 4) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === 4) {
+    setTimeout(function() {
+      if (pinEntry === ADMIN_PIN) {
+        isAdmin = true;
+        closePin();
+        applyAdminState();
+        render();
+      } else {
+        document.getElementById('pin-error').textContent = lang === 'de' ? 'Falscher PIN' : 'PIN incorrecto';
+        pinEntry = '';
+        updatePinDots();
+      }
+    }, 150);
+  }
+}
+
+function pinDel() {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+}
+
+function updatePinDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('d' + i);
+    if (i < pinEntry.length) dot.classList.add('filled');
+    else dot.classList.remove('filled');
+  }
+}
+
+function lockAdmin() {
+  isAdmin = false;
+  applyAdminState();
+  render();
+}
+
+function applyAdminState() {
+  var resetBtn = document.getElementById('reset-btn');
+  var banner = document.getElementById('readonly-banner');
+  var badge = document.getElementById('admin-badge');
+  var arrInput = document.getElementById('date-arrival');
+  var depInput = document.getElementById('date-departure');
+
+  if (isAdmin) {
+    resetBtn.style.display = 'block';
+    banner.classList.remove('visible');
+    badge.classList.add('visible');
+    arrInput.disabled = false;
+    depInput.disabled = false;
+  } else {
+    resetBtn.style.display = 'none';
+    banner.classList.add('visible');
+    badge.classList.remove('visible');
+    arrInput.disabled = true;
+    depInput.disabled = true;
+  }
+}
 
 var SECTIONS = {
   de: [
@@ -193,35 +330,16 @@ var UI = {
     inDays: function(n){ return 'in ' + n + ' Tagen'; },
     daysAgo: function(n){ return 'vor ' + n + ' Tagen'; },
     fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    readonlyMsg: '👁 Nur Ansicht'
+    readonly: '👁 Nur Ansicht', pinTitle: 'Admin PIN'
   },
   es: { wordmark: 'Plan de Limpieza', reset: 'Reset', lblArrival: 'Llegada', lblDeparture: 'Salida',
     today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
     inDays: function(n){ return 'en ' + n + ' días'; },
     daysAgo: function(n){ return 'hace ' + n + ' días'; },
     fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    readonlyMsg: '👁 Solo lectura'
+    readonly: '👁 Solo lectura', pinTitle: 'Admin PIN'
   }
 };
-
-function initUI() {
-  var resetBtn = document.getElementById('reset-btn');
-  var banner = document.getElementById('readonly-banner');
-  var arrInput = document.getElementById('date-arrival');
-  var depInput = document.getElementById('date-departure');
-
-  if (isAdmin) {
-    resetBtn.style.display = 'block';
-    banner.classList.remove('visible');
-    arrInput.disabled = false;
-    depInput.disabled = false;
-  } else {
-    resetBtn.style.display = 'none';
-    banner.classList.add('visible');
-    arrInput.disabled = true;
-    depInput.disabled = true;
-  }
-}
 
 function onDateInput(which) {
   if (!isAdmin) return;
@@ -293,12 +411,11 @@ function refreshCount(si) {
   var sec = SECTIONS[lang][si];
   if (!sec) return;
   var total = 0, done = 0;
-  for (var pi = 0; pi < sec.phases.length; pi++) {
+  for (var pi = 0; pi < sec.phases.length; pi++)
     for (var ti = 0; ti < sec.phases[pi].tasks.length; ti++) {
       total++;
       if (checked[si + '-' + pi + '-' + ti]) done++;
     }
-  }
   var el = document.getElementById('sc-' + si);
   if (el) el.textContent = done + ' / ' + total;
 }
@@ -308,12 +425,11 @@ function updateProgress() {
   var total = 0, done = 0;
   for (var si = 0; si < sections.length; si++) {
     if (mode !== null && sections[si].mode !== mode) continue;
-    for (var pi = 0; pi < sections[si].phases.length; pi++) {
+    for (var pi = 0; pi < sections[si].phases.length; pi++)
       for (var ti = 0; ti < sections[si].phases[pi].tasks.length; ti++) {
         total++;
         if (checked[si + '-' + pi + '-' + ti]) done++;
       }
-    }
   }
   document.getElementById('pf').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
   document.getElementById('pl').textContent = done + ' / ' + total;
@@ -324,7 +440,7 @@ function resetAll() {
   checked = {};
   document.querySelectorAll('.task').forEach(function(t) { t.classList.remove('checked'); });
   var sections = SECTIONS[lang];
-  for (var si = 0; si < sections.length; si++) { refreshCount(si); }
+  for (var si = 0; si < sections.length; si++) refreshCount(si);
   updateProgress();
 }
 
@@ -345,7 +461,8 @@ function applyUI() {
   document.getElementById('lbl-departure').textContent = u.lblDeparture;
   document.getElementById('banner-arrival-label').textContent = u.lblArrival;
   document.getElementById('banner-departure-label').textContent = u.lblDeparture;
-  document.getElementById('readonly-banner').textContent = u.readonlyMsg;
+  document.getElementById('readonly-banner').textContent = u.readonly;
+  document.getElementById('pin-title').textContent = u.pinTitle;
 }
 
 function render() {
@@ -363,12 +480,11 @@ function render() {
     if (currentMode !== null && sec.mode !== currentMode) continue;
 
     var total = 0, done = 0;
-    for (var pi = 0; pi < sec.phases.length; pi++) {
+    for (var pi = 0; pi < sec.phases.length; pi++)
       for (var ti = 0; ti < sec.phases[pi].tasks.length; ti++) {
         total++;
         if (checked[si + '-' + pi + '-' + ti]) done++;
       }
-    }
 
     var section = document.createElement('div');
     section.className = 'section' + (collapsed[si] ? ' collapsed' : '');
@@ -377,10 +493,8 @@ function render() {
     var header = document.createElement('div');
     header.className = 'section-header';
     header.innerHTML =
-      '<div class="section-left">' +
-        '<span class="section-title">' + sec.title + '</span>' +
-        '<span class="section-count" id="sc-' + si + '">' + done + ' / ' + total + '</span>' +
-      '</div>' +
+      '<div class="section-left"><span class="section-title">' + sec.title + '</span>' +
+      '<span class="section-count" id="sc-' + si + '">' + done + ' / ' + total + '</span></div>' +
       '<div class="collapse-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg></div>';
     (function(idx) { header.addEventListener('click', function() { toggleCollapse(idx); }); })(si);
     section.appendChild(header);
@@ -405,8 +519,7 @@ function render() {
         el.innerHTML =
           '<div class="cb"><svg viewBox="0 0 10 8" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg></div>' +
           '<div class="task-body"><div class="task-text">' + task.text + '</div>' +
-          (task.note ? '<span class="task-note">' + task.note + '</span>' : '') +
-          '</div>';
+          (task.note ? '<span class="task-note">' + task.note + '</span>' : '') + '</div>';
         if (isAdmin) {
           (function(taskId) {
             el.addEventListener('click', function(e) { e.stopPropagation(); toggleTask(taskId); });
@@ -415,16 +528,14 @@ function render() {
         body.appendChild(el);
       }
     }
-
     section.appendChild(body);
     container.appendChild(section);
   }
-
   updateProgress();
 }
 
 applyUI();
-initUI();
+applyAdminState();
 render();
 </script>
 
