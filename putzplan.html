@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Limpieza</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4f3f1; --white: #fff; --text: #1a1a1a;
+    --muted: #bbb8b3; --border: #e6e3de;
+    --inactive: #d4d1cb; --inactive-bg: #f9f8f6;
+    --warn: #d4622a;
+    --arrival: #2a6e3f; --arrival-bg: #f0f7f3; --arrival-border: #b6d9c3;
+    --departure: #1a3a6e; --departure-bg: #f0f4fa; --departure-border: #b6c8e8;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; padding-bottom: 40px; -webkit-font-smoothing: antialiased; }
+
+  .header { background: var(--white); border-bottom: 1px solid var(--border); padding: 26px 20px 18px; position: sticky; top: 0; z-index: 100; }
+  .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .wordmark { font-size: 13px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; }
+  .controls { display: flex; align-items: center; gap: 14px; }
+  .reset-btn { background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--muted); cursor: pointer; padding: 0; letter-spacing: 0.04em; }
+  .lang-toggle { display: flex; gap: 6px; align-items: center; }
+  .flag-btn { border: 2px solid transparent; background: transparent; border-radius: 6px; padding: 2px; cursor: pointer; opacity: 0.4; line-height: 1; font-size: 22px; transition: border-color 0.18s, opacity 0.18s; }
+  .flag-btn.active { border-color: var(--text); opacity: 1; }
+
+  .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .date-card { border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; transition: opacity 0.25s; }
+  .date-card.arrival { background: var(--arrival-bg); border: 1.5px solid var(--arrival-border); }
+  .date-card.departure { background: var(--departure-bg); border: 1.5px solid var(--departure-border); }
+  .date-card.dimmed { opacity: 0.35; }
+  .date-label { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+  .date-card.arrival .date-label { color: var(--arrival); }
+  .date-card.departure .date-label { color: var(--departure); }
+  .date-input { border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: var(--text); width: 100%; outline: none; padding: 0; cursor: pointer; }
+
+  .progress-row { display: flex; align-items: center; gap: 12px; }
+  .progress-bar { flex: 1; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.35s ease; width: 0%; }
+  .progress-label { font-size: 11px; color: var(--muted); white-space: nowrap; min-width: 36px; text-align: right; }
+
+  .content { max-width: 480px; margin: 0 auto; padding: 16px 16px 0; }
+
+  .date-banner { border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; display: none; align-items: center; gap: 10px; }
+  .date-banner.visible { display: flex; }
+  .date-banner.arrival { background: var(--arrival-bg); border: 1.5px solid var(--arrival-border); }
+  .date-banner.departure { background: var(--departure-bg); border: 1.5px solid var(--departure-border); }
+  .banner-icon { font-size: 20px; flex-shrink: 0; }
+  .banner-text { flex: 1; }
+  .banner-label { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+  .date-banner.arrival .banner-label { color: var(--arrival); }
+  .date-banner.departure .banner-label { color: var(--departure); }
+  .banner-date { font-size: 14px; font-weight: 500; color: var(--text); }
+  .banner-days { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .section { background: var(--white); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; border-bottom: 1px solid var(--border); }
+  .section.collapsed .section-header { border-bottom: none; }
+  .section-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .section-title { font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; }
+  .section-count { font-size: 11px; color: var(--muted); }
+  .collapse-icon { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: transform 0.25s; }
+  .section.collapsed .collapse-icon { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+
+  .phase-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 16px 2px; }
+
+  .task { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; background: var(--inactive-bg); transition: background 0.15s; }
+  .task:last-child { border-bottom: none; }
+  .task:active { background: #f0efec; }
+  .task.checked { background: var(--white); }
+  .cb { width: 18px; height: 18px; border: 1.5px solid var(--inactive); border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.18s; }
+  .task.checked .cb { background: var(--text); border-color: var(--text); }
+  .cb svg { width: 10px; height: 10px; opacity: 0; transform: scale(0.5); transition: all 0.18s; }
+  .task.checked .cb svg { opacity: 1; transform: scale(1); }
+  .task-body { flex: 1; }
+  .task-text { font-size: 14px; font-weight: 300; line-height: 1.45; color: var(--inactive); transition: color 0.2s; }
+  .task.checked .task-text { color: var(--text); font-weight: 400; }
+  .task-note { display: block; font-size: 11px; color: var(--inactive); margin-top: 3px; }
+  .task.checked .task-note { color: var(--warn); font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="top-row">
+    <span class="wordmark" id="wordmark">Plan de Limpieza</span>
+    <div class="controls">
+      <button class="reset-btn" id="reset-btn" onclick="resetAll()">Reset</button>
+      <div class="lang-toggle">
+        <button class="flag-btn" id="btn-de" onclick="setLang('de')">🇩🇪</button>
+        <button class="flag-btn active" id="btn-es" onclick="setLang('es')">🇪🇸</button>
+      </div>
+    </div>
+  </div>
+  <div class="date-row">
+    <div class="date-card arrival" id="card-arrival">
+      <div class="date-label"><span>✈️</span><span id="lbl-arrival">Llegada</span></div>
+      <input class="date-input" type="date" id="date-arrival" oninput="onDateInput('arrival')">
+    </div>
+    <div class="date-card departure" id="card-departure">
+      <div class="date-label"><span>🧳</span><span id="lbl-departure">Salida</span></div>
+      <input class="date-input" type="date" id="date-departure" oninput="onDateInput('departure')">
+    </div>
+  </div>
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+    <div class="progress-label" id="pl">0 / 0</div>
+  </div>
+</div>
+
+<div class="content" id="content">
+  <div class="date-banner arrival" id="banner-arrival">
+    <div class="banner-icon">✈️</div>
+    <div class="banner-text">
+      <div class="banner-label" id="banner-arrival-label">Llegada</div>
+      <div class="banner-date" id="banner-arrival-date"></div>
+      <div class="banner-days" id="banner-arrival-days"></div>
+    </div>
+  </div>
+  <div class="date-banner departure" id="banner-departure">
+    <div class="banner-icon">🧳</div>
+    <div class="banner-text">
+      <div class="banner-label" id="banner-departure-label">Salida</div>
+      <div class="banner-date" id="banner-departure-date"></div>
+      <div class="banner-days" id="banner-departure-days"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var lang = 'es';
+var mode = null; // null | 'arrival' | 'departure'
+var checked = {};
+var collapsed = {};
+
+// ALL sections strictly arrival OR departure — no 'both'
+var SECTIONS = {
+  de: [
+    { mode: 'arrival', title: 'Terrasse – Vor Ankunft', phases: [{ label: '', tasks: [
+      { text: 'Schutzbezüge entfernen, Sitzmöbel aufstellen', note: 'Position gemäß Foto' },
+      { text: 'Sonnenschirme aufstellen — nicht aufspannen' },
+      { text: 'Terrasse nass wischen' },
+      { text: 'Alle Glas- und Fensterflächen putzen' },
+      { text: 'Grillkammer feucht entstauben' },
+    ]}]},
+    { mode: 'arrival', title: 'Gästebad & WC', phases: [{ label: '', tasks: [
+      { text: 'Badezimmer und WC putzen' },
+    ]}]},
+    { mode: 'arrival', title: 'Gästezimmer 1', phases: [{ label: '', tasks: [
+      { text: 'Terrassentürverglasung putzen' },
+      { text: 'Neue Bettwäsche aufziehen' },
+    ]}]},
+    { mode: 'arrival', title: 'Gästezimmer 2', phases: [{ label: '', tasks: [
+      { text: 'Verglasung putzen' },
+      { text: 'Neue Bettwäsche aufziehen' },
+    ]}]},
+    { mode: 'arrival', title: 'Master Bedroom', phases: [{ label: '', tasks: [
+      { text: 'Verglasung der Schiebetüren putzen' },
+      { text: 'Neue Bettwäsche aufziehen', note: 'Tagesdecke nicht waschen!' },
+    ]}]},
+    { mode: 'arrival', title: 'Master Bad & WC', phases: [{ label: '', tasks: [
+      { text: 'Badezimmer und WC putzen' },
+      { text: 'Duschverglasung innen und außen putzen' },
+    ]}]},
+    { mode: 'arrival', title: 'Eingangsbereich', phases: [{ label: '', tasks: [
+      { text: 'Türblatt feucht wischen' },
+      { text: 'Patio fegen' },
+    ]}]},
+    { mode: 'departure', title: 'Terrasse – Nach Abreise', phases: [{ label: '', tasks: [
+      { text: 'Sitzmöbel und Tische mit Schutzbezug abdecken' },
+      { text: 'Sonnenschirme in Grillkammer verstauen' },
+      { text: 'Grill reinigen' },
+    ]}]},
+    { mode: 'departure', title: 'Küche – Nach Abreise', phases: [{ label: '', tasks: [
+      { text: 'Kühlschrank ausräumen und reinigen' },
+    ]}]},
+  ],
+  es: [
+    { mode: 'arrival', title: 'Terraza – Antes de la llegada', phases: [{ label: '', tasks: [
+      { text: 'Retirar fundas y colocar los muebles de jardín', note: 'Posición según foto' },
+      { text: 'Colocar las sombrillas — sin abrir' },
+      { text: 'Fregar la terraza con agua' },
+      { text: 'Limpiar todos los cristales y ventanas' },
+      { text: 'Despolvar en húmedo el compartimento de la barbacoa' },
+    ]}]},
+    { mode: 'arrival', title: 'Baño & WC invitados', phases: [{ label: '', tasks: [
+      { text: 'Limpiar baño y WC' },
+    ]}]},
+    { mode: 'arrival', title: 'Habitación invitados 1', phases: [{ label: '', tasks: [
+      { text: 'Limpiar el cristal de la puerta de la terraza' },
+      { text: 'Cambiar la ropa de cama' },
+    ]}]},
+    { mode: 'arrival', title: 'Habitación invitados 2', phases: [{ label: '', tasks: [
+      { text: 'Limpiar cristales' },
+      { text: 'Cambiar la ropa de cama' },
+    ]}]},
+    { mode: 'arrival', title: 'Dormitorio principal', phases: [{ label: '', tasks: [
+      { text: 'Limpiar cristal de las puertas correderas' },
+      { text: 'Cambiar la ropa de cama', note: '¡No lavar el cubrecama!' },
+    ]}]},
+    { mode: 'arrival', title: 'Baño & WC principal', phases: [{ label: '', tasks: [
+      { text: 'Limpiar baño y WC' },
+      { text: 'Limpiar cristal de la ducha por dentro y por fuera' },
+    ]}]},
+    { mode: 'arrival', title: 'Entrada', phases: [{ label: '', tasks: [
+      { text: 'Limpiar la puerta con paño húmedo' },
+      { text: 'Barrer el patio' },
+    ]}]},
+    { mode: 'departure', title: 'Terraza – Después de la salida', phases: [{ label: '', tasks: [
+      { text: 'Cubrir sillas y mesas con sus fundas' },
+      { text: 'Guardar sombrillas en el compartimento de la barbacoa' },
+      { text: 'Limpiar la barbacoa' },
+    ]}]},
+    { mode: 'departure', title: 'Cocina – Después de la salida', phases: [{ label: '', tasks: [
+      { text: 'Vaciar y limpiar el frigorífico' },
+    ]}]},
+  ]
+};
+
+var UI = {
+  de: { wordmark: 'Putzplan', reset: 'Zurücksetzen', lblArrival: 'Anreise', lblDeparture: 'Abreise',
+    today: 'Heute', tomorrow: 'Morgen', yesterday: 'Gestern',
+    inDays: function(n){ return 'in ' + n + ' Tagen'; },
+    daysAgo: function(n){ return 'vor ' + n + ' Tagen'; },
+    fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); }
+  },
+  es: { wordmark: 'Plan de Limpieza', reset: 'Reset', lblArrival: 'Llegada', lblDeparture: 'Salida',
+    today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
+    inDays: function(n){ return 'en ' + n + ' días'; },
+    daysAgo: function(n){ return 'hace ' + n + ' días'; },
+    fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); }
+  }
+};
+
+function onDateInput(which) {
+  var other = which === 'arrival' ? 'departure' : 'arrival';
+  var val = document.getElementById('date-' + which).value;
+  if (val) {
+    document.getElementById('date-' + other).value = '';
+    document.getElementById('card-' + other).classList.add('dimmed');
+    document.getElementById('card-' + which).classList.remove('dimmed');
+    mode = which;
+  } else {
+    document.getElementById('card-arrival').classList.remove('dimmed');
+    document.getElementById('card-departure').classList.remove('dimmed');
+    mode = null;
+  }
+  updateBanners();
+  render();
+}
+
+function dayDiff(dateStr) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
+}
+
+function relLabel(diff) {
+  var u = UI[lang];
+  if (diff === 0) return u.today;
+  if (diff === 1) return u.tomorrow;
+  if (diff === -1) return u.yesterday;
+  if (diff > 1) return u.inDays(diff);
+  return u.daysAgo(Math.abs(diff));
+}
+
+function updateBanners() {
+  var u = UI[lang];
+  var av = document.getElementById('date-arrival').value;
+  var dv = document.getElementById('date-departure').value;
+  var bA = document.getElementById('banner-arrival');
+  var bD = document.getElementById('banner-departure');
+  if (av) {
+    document.getElementById('banner-arrival-date').textContent = u.fmt(new Date(av + 'T00:00:00'));
+    document.getElementById('banner-arrival-days').textContent = relLabel(dayDiff(av));
+    bA.classList.add('visible'); bD.classList.remove('visible');
+  } else if (dv) {
+    document.getElementById('banner-departure-date').textContent = u.fmt(new Date(dv + 'T00:00:00'));
+    document.getElementById('banner-departure-days').textContent = relLabel(dayDiff(dv));
+    bD.classList.add('visible'); bA.classList.remove('visible');
+  } else {
+    bA.classList.remove('visible'); bD.classList.remove('visible');
+  }
+}
+
+function toggleCollapse(si) {
+  collapsed[si] = !collapsed[si];
+  var sec = document.getElementById('section-' + si);
+  if (sec) sec.classList.toggle('collapsed', !!collapsed[si]);
+}
+
+function toggleTask(id) {
+  checked[id] = !checked[id];
+  var el = document.getElementById('t-' + id);
+  if (el) el.classList.toggle('checked', checked[id]);
+  refreshCount(parseInt(id.split('-')[0]));
+  updateProgress();
+}
+
+function refreshCount(si) {
+  var sec = SECTIONS[lang][si];
+  if (!sec) return;
+  var total = 0, done = 0;
+  for (var pi = 0; pi < sec.phases.length; pi++) {
+    for (var ti = 0; ti < sec.phases[pi].tasks.length; ti++) {
+      total++;
+      if (checked[si + '-' + pi + '-' + ti]) done++;
+    }
+  }
+  var el = document.getElementById('sc-' + si);
+  if (el) el.textContent = done + ' / ' + total;
+}
+
+function updateProgress() {
+  var sections = SECTIONS[lang];
+  var total = 0, done = 0;
+  for (var si = 0; si < sections.length; si++) {
+    var sec = sections[si];
+    // strict: only show sections matching current mode (or all if no mode)
+    if (mode !== null && sec.mode !== mode) continue;
+    for (var pi = 0; pi < sec.phases.length; pi++) {
+      for (var ti = 0; ti < sec.phases[pi].tasks.length; ti++) {
+        total++;
+        if (checked[si + '-' + pi + '-' + ti]) done++;
+      }
+    }
+  }
+  document.getElementById('pf').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+  document.getElementById('pl').textContent = done + ' / ' + total;
+}
+
+function resetAll() {
+  checked = {};
+  document.querySelectorAll('.task').forEach(function(t) { t.classList.remove('checked'); });
+  var sections = SECTIONS[lang];
+  for (var si = 0; si < sections.length; si++) { refreshCount(si); }
+  updateProgress();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('btn-de').classList.toggle('active', l === 'de');
+  document.getElementById('btn-es').classList.toggle('active', l === 'es');
+  applyUI();
+  updateBanners();
+  render();
+}
+
+function applyUI() {
+  var u = UI[lang];
+  document.getElementById('wordmark').textContent = u.wordmark;
+  document.getElementById('reset-btn').textContent = u.reset;
+  document.getElementById('lbl-arrival').textContent = u.lblArrival;
+  document.getElementById('lbl-departure').textContent = u.lblDeparture;
+  document.getElementById('banner-arrival-label').textContent = u.lblArrival;
+  document.getElementById('banner-departure-label').textContent = u.lblDeparture;
+}
+
+function render() {
+  var currentMode = mode; // capture locally
+  var sections = SECTIONS[lang];
+  var container = document.getElementById('content');
+  var bA = document.getElementById('banner-arrival');
+  var bD = document.getElementById('banner-departure');
+  container.innerHTML = '';
+  container.appendChild(bA);
+  container.appendChild(bD);
+
+  for (var si = 0; si < sections.length; si++) {
+    var sec = sections[si];
+
+    // STRICT: skip if mode set and section doesn't match
+    if (currentMode !== null && sec.mode !== currentMode) continue;
+
+    var total = 0, done = 0;
+    for (var pi = 0; pi < sec.phases.length; pi++) {
+      for (var ti = 0; ti < sec.phases[pi].tasks.length; ti++) {
+        total++;
+        if (checked[si + '-' + pi + '-' + ti]) done++;
+      }
+    }
+
+    var section = document.createElement('div');
+    section.className = 'section' + (collapsed[si] ? ' collapsed' : '');
+    section.id = 'section-' + si;
+
+    var header = document.createElement('div');
+    header.className = 'section-header';
+    header.innerHTML =
+      '<div class="section-left">' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count" id="sc-' + si + '">' + done + ' / ' + total + '</span>' +
+      '</div>' +
+      '<div class="collapse-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg></div>';
+    (function(idx) { header.addEventListener('click', function() { toggleCollapse(idx); }); })(si);
+    section.appendChild(header);
+
+    var body = document.createElement('div');
+    body.className = 'section-body';
+
+    for (var pi2 = 0; pi2 < sec.phases.length; pi2++) {
+      var ph = sec.phases[pi2];
+      if (ph.label) {
+        var lbl = document.createElement('div');
+        lbl.className = 'phase-label';
+        lbl.textContent = ph.label;
+        body.appendChild(lbl);
+      }
+      for (var ti2 = 0; ti2 < ph.tasks.length; ti2++) {
+        var task = ph.tasks[ti2];
+        var id = si + '-' + pi2 + '-' + ti2;
+        var el = document.createElement('div');
+        el.className = 'task' + (checked[id] ? ' checked' : '');
+        el.id = 't-' + id;
+        el.innerHTML =
+          '<div class="cb"><svg viewBox="0 0 10 8" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg></div>' +
+          '<div class="task-body"><div class="task-text">' + task.text + '</div>' +
+          (task.note ? '<span class="task-note">' + task.note + '</span>' : '') +
+          '</div>';
+        (function(taskId) { el.addEventListener('click', function(e) { e.stopPropagation(); toggleTask(taskId); }); })(id);
+        body.appendChild(el);
+      }
+    }
+
+    section.appendChild(body);
+    container.appendChild(section);
+  }
+
+  updateProgress();
+}
+
+applyUI();
+render();
+</script>
+</body>
+</html>
