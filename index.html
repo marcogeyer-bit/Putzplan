@@ -18,6 +18,11 @@
   }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; padding-bottom: 40px; -webkit-font-smoothing: antialiased; }
 
+/* SYNC STATUS */
+.sync-bar { background: var(–arrival-bg); border-bottom: 1px solid var(–arrival-border); padding: 6px 20px; font-size: 10px; color: var(–arrival); letter-spacing: 0.06em; text-align: center; display: none; }
+.sync-bar.visible { display: block; }
+.sync-bar.error { background: #fff0f0; border-color: #f5b8b8; color: var(–warn); }
+
 /* PIN */
 .pin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
 .pin-overlay.visible { display: flex; }
@@ -98,6 +103,8 @@
 </head>
 <body>
 
+<div class="sync-bar" id="sync-bar">⟳ Wird synchronisiert...</div>
+
 <div class="pin-overlay" id="pin-overlay">
   <div class="pin-box">
     <div class="pin-title">Admin PIN</div>
@@ -176,7 +183,29 @@
   </div>
 </div>
 
+<!-- Firebase -->
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
+// ── FIREBASE CONFIG ──────────────────────────────────────
+var firebaseConfig = {
+  apiKey: "AIzaSyCaZnNxN8_tHZpsqOsG6Lr4yXXpqBCGvmA",
+  authDomain: "putzplan-fdda9.firebaseapp.com",
+  databaseURL: "https://putzplan-fdda9-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "putzplan-fdda9",
+  storageBucket: "putzplan-fdda9.firebasestorage.app",
+  messagingSenderId: "620243489015",
+  appId: "1:620243489015:web:96d10e3e49b8e5c0e4b5c3",
+  measurementId: "G-MXPXQ7FT6D"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var stateRef = db.ref('putzplan/state');
+// ─────────────────────────────────────────────────────────
+
 var ADMIN_PIN = '1967';
 var pinEntry = '';
 var isAdmin = false;
@@ -184,42 +213,70 @@ var lang = 'es';
 var mode = null;
 var checked = {};
 var collapsed = {};
+var remoteData = {}; // last known remote state
 
-// Apply visual state directly to a task element — no CSS classes, pure inline styles
-function applyTaskStyle(el, isChecked) {
-  var cb = el.querySelector('.task-cb');
-  var txt = el.querySelector('.task-text');
-  var note = el.querySelector('.task-note');
-
-  if (isChecked) {
-    el.style.background = '#ffffff';
-    cb.style.background = '#1a1a1a';
-    cb.style.border = '1.5px solid #1a1a1a';
-    cb.innerHTML = '<svg viewBox="0 0 10 8" width="10" height="10" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg>';
-    txt.style.color = '#1a1a1a';
-    txt.style.fontWeight = '400';
-    if (note) note.style.color = '#d4622a';
-  } else {
-    el.style.background = '#f9f8f6';
-    cb.style.background = '#ffffff';
-    cb.style.border = '1.5px solid #d4d1cb';
-    cb.innerHTML = '';
-    txt.style.color = '#d4d1cb';
-    txt.style.fontWeight = '300';
-    if (note) note.style.color = '#d4d1cb';
+function showSync(msg, isError) {
+  var bar = document.getElementById('sync-bar');
+  bar.textContent = msg;
+  bar.className = 'sync-bar visible' + (isError ? ' error' : '');
+  clearTimeout(bar._t);
+  if (!isError) {
+    bar._t = setTimeout(function() { bar.classList.remove('visible'); }, 2000);
   }
 }
 
-function handleTaskClick(id, e) {
-  e.stopPropagation();
+// Save state to Firebase
+function saveToFirebase() {
   if (!isAdmin) return;
-  checked[id] = !checked[id];
-  var el = document.getElementById('t-' + id);
-  if (el) applyTaskStyle(el, checked[id]);
-  refreshCount(parseInt(id.split('-')[0]));
-  updateProgress();
+  showSync('⟳ Wird gespeichert...');
+  var state = {
+    checked: checked,
+    mode: mode,
+    arrival: document.getElementById('date-arrival').value,
+    departure: document.getElementById('date-departure').value,
+    ts: Date.now()
+  };
+  stateRef.set(state, function(err) {
+    if (err) showSync('⚠ Fehler beim Speichern', true);
+    else showSync('✓ Gespeichert');
+  });
 }
 
+// Load state from Firebase and apply
+function loadFromFirebase(data) {
+  if (!data) return;
+  remoteData = data;
+
+  // Apply checked state
+  checked = data.checked || {};
+
+  // Apply dates
+  if (data.arrival) {
+    document.getElementById('date-arrival').value = data.arrival;
+    document.getElementById('card-departure').classList.add('dimmed');
+    document.getElementById('card-arrival').classList.remove('dimmed');
+    mode = 'arrival';
+  } else if (data.departure) {
+    document.getElementById('date-departure').value = data.departure;
+    document.getElementById('card-arrival').classList.add('dimmed');
+    document.getElementById('card-departure').classList.remove('dimmed');
+    mode = 'departure';
+  } else {
+    mode = null;
+  }
+
+  updateBanners();
+  render();
+}
+
+// Listen for real-time updates
+stateRef.on('value', function(snapshot) {
+  loadFromFirebase(snapshot.val());
+}, function(err) {
+  showSync('⚠ Keine Verbindung', true);
+});
+
+// ── PIN ──────────────────────────────────────────────────
 function openPin() {
   if (isAdmin) { lockAdmin(); return; }
   pinEntry = '';
@@ -253,10 +310,7 @@ function pinPress(digit) {
   }
 }
 
-function pinDel() {
-  pinEntry = pinEntry.slice(0, -1);
-  updatePinDots();
-}
+function pinDel() { pinEntry = pinEntry.slice(0, -1); updatePinDots(); }
 
 function updatePinDots() {
   for (var i = 0; i < 4; i++) {
@@ -266,10 +320,7 @@ function updatePinDots() {
   }
 }
 
-function lockAdmin() {
-  isAdmin = false;
-  applyAdminState();
-}
+function lockAdmin() { isAdmin = false; applyAdminState(); }
 
 function applyAdminState() {
   document.getElementById('admin-badge').classList.toggle('visible', isAdmin);
@@ -279,58 +330,42 @@ function applyAdminState() {
   document.getElementById('date-departure').disabled = !isAdmin;
 }
 
-var SECTIONS = {
-  de: [
-    { mode: 'arrival', title: 'Terrasse – Vor Ankunft', phases: [{ label: '', tasks: [
-      { text: 'Schutzbezüge entfernen, Sitzmöbel aufstellen', note: 'Position gemäß Foto' },
-      { text: 'Sonnenschirme aufstellen — nicht aufspannen' },
-      { text: 'Terrasse nass wischen' },
-      { text: 'Alle Glas- und Fensterflächen putzen' },
-      { text: 'Grillkammer feucht entstauben' },
-    ]}]},
-    { mode: 'arrival', title: 'Gästebad & WC', phases: [{ label: '', tasks: [{ text: 'Badezimmer und WC putzen' }]}]},
-    { mode: 'arrival', title: 'Gästezimmer 1', phases: [{ label: '', tasks: [{ text: 'Terrassentürverglasung putzen' }, { text: 'Neue Bettwäsche aufziehen' }]}]},
-    { mode: 'arrival', title: 'Gästezimmer 2', phases: [{ label: '', tasks: [{ text: 'Verglasung putzen' }, { text: 'Neue Bettwäsche aufziehen' }]}]},
-    { mode: 'arrival', title: 'Master Bedroom', phases: [{ label: '', tasks: [{ text: 'Verglasung der Schiebetüren putzen' }, { text: 'Neue Bettwäsche aufziehen', note: 'Tagesdecke nicht waschen!' }]}]},
-    { mode: 'arrival', title: 'Master Bad & WC', phases: [{ label: '', tasks: [{ text: 'Badezimmer und WC putzen' }, { text: 'Duschverglasung innen und außen putzen' }]}]},
-    { mode: 'arrival', title: 'Eingangsbereich', phases: [{ label: '', tasks: [{ text: 'Türblatt feucht wischen' }, { text: 'Patio fegen' }]}]},
-    { mode: 'departure', title: 'Terrasse – Nach Abreise', phases: [{ label: '', tasks: [{ text: 'Sitzmöbel und Tische mit Schutzbezug abdecken' }, { text: 'Sonnenschirme in Grillkammer verstauen' }, { text: 'Grill reinigen' }]}]},
-    { mode: 'departure', title: 'Küche – Nach Abreise', phases: [{ label: '', tasks: [{ text: 'Kühlschrank ausräumen und reinigen' }]}]},
-  ],
-  es: [
-    { mode: 'arrival', title: 'Terraza – Antes de la llegada', phases: [{ label: '', tasks: [
-      { text: 'Retirar fundas y colocar los muebles de jardín', note: 'Posición según foto' },
-      { text: 'Colocar las sombrillas — sin abrir' },
-      { text: 'Fregar la terraza con agua' },
-      { text: 'Limpiar todos los cristales y ventanas' },
-      { text: 'Despolvar en húmedo el compartimento de la barbacoa' },
-    ]}]},
-    { mode: 'arrival', title: 'Baño & WC invitados', phases: [{ label: '', tasks: [{ text: 'Limpiar baño y WC' }]}]},
-    { mode: 'arrival', title: 'Habitación invitados 1', phases: [{ label: '', tasks: [{ text: 'Limpiar el cristal de la puerta de la terraza' }, { text: 'Cambiar la ropa de cama' }]}]},
-    { mode: 'arrival', title: 'Habitación invitados 2', phases: [{ label: '', tasks: [{ text: 'Limpiar cristales' }, { text: 'Cambiar la ropa de cama' }]}]},
-    { mode: 'arrival', title: 'Dormitorio principal', phases: [{ label: '', tasks: [{ text: 'Limpiar cristal de las puertas correderas' }, { text: 'Cambiar la ropa de cama', note: '¡No lavar el cubrecama!' }]}]},
-    { mode: 'arrival', title: 'Baño & WC principal', phases: [{ label: '', tasks: [{ text: 'Limpiar baño y WC' }, { text: 'Limpiar cristal de la ducha por dentro y por fuera' }]}]},
-    { mode: 'arrival', title: 'Entrada', phases: [{ label: '', tasks: [{ text: 'Limpiar la puerta con paño húmedo' }, { text: 'Barrer el patio' }]}]},
-    { mode: 'departure', title: 'Terraza – Después de la salida', phases: [{ label: '', tasks: [{ text: 'Cubrir sillas y mesas con sus fundas' }, { text: 'Guardar sombrillas en el compartimento de la barbacoa' }, { text: 'Limpiar la barbacoa' }]}]},
-    { mode: 'departure', title: 'Cocina – Después de la salida', phases: [{ label: '', tasks: [{ text: 'Vaciar y limpiar el frigorífico' }]}]},
-  ]
-};
-
-var UI = {
-  de: { wordmark: 'Putzplan', reset: 'Zurücksetzen', lblArrival: 'Anreise', lblDeparture: 'Abreise',
-    today: 'Heute', tomorrow: 'Morgen', yesterday: 'Gestern',
-    inDays: function(n){ return 'in ' + n + ' Tagen'; },
-    daysAgo: function(n){ return 'vor ' + n + ' Tagen'; },
-    fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); }
-  },
-  es: { wordmark: 'Plan de Limpieza', reset: 'Reset', lblArrival: 'Llegada', lblDeparture: 'Salida',
-    today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
-    inDays: function(n){ return 'en ' + n + ' días'; },
-    daysAgo: function(n){ return 'hace ' + n + ' días'; },
-    fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); }
+// ── TASK VISUAL ──────────────────────────────────────────
+function applyTaskStyle(el, isChecked) {
+  var cb = el.querySelector('.task-cb');
+  var txt = el.querySelector('.task-text');
+  var note = el.querySelector('.task-note');
+  if (isChecked) {
+    el.style.background = '#ffffff';
+    cb.style.background = '#1a1a1a';
+    cb.style.border = '1.5px solid #1a1a1a';
+    cb.innerHTML = '<svg viewBox="0 0 10 8" width="10" height="10" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg>';
+    txt.style.color = '#1a1a1a';
+    txt.style.fontWeight = '400';
+    if (note) note.style.color = '#d4622a';
+  } else {
+    el.style.background = '#f9f8f6';
+    cb.style.background = '#ffffff';
+    cb.style.border = '1.5px solid #d4d1cb';
+    cb.innerHTML = '';
+    txt.style.color = '#d4d1cb';
+    txt.style.fontWeight = '300';
+    if (note) note.style.color = '#d4d1cb';
   }
-};
+}
 
+function handleTaskClick(id, e) {
+  e.stopPropagation();
+  if (!isAdmin) return;
+  checked[id] = !checked[id];
+  var el = document.getElementById('t-' + id);
+  if (el) applyTaskStyle(el, checked[id]);
+  refreshCount(parseInt(id.split('-')[0]));
+  updateProgress();
+  saveToFirebase();
+}
+
+// ── DATE INPUT ───────────────────────────────────────────
 function onDateInput(which) {
   if (!isAdmin) return;
   var other = which === 'arrival' ? 'departure' : 'arrival';
@@ -347,8 +382,10 @@ function onDateInput(which) {
   }
   updateBanners();
   render();
+  saveToFirebase();
 }
 
+// ── DATES & BANNERS ──────────────────────────────────────
 function dayDiff(dateStr) {
   var today = new Date(); today.setHours(0,0,0,0);
   return Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
@@ -382,6 +419,17 @@ function updateBanners() {
   }
 }
 
+// ── RESET ────────────────────────────────────────────────
+function resetAll() {
+  if (!isAdmin) return;
+  checked = {};
+  document.querySelectorAll('.task').forEach(function(el) { applyTaskStyle(el, false); });
+  SECTIONS[lang].forEach(function(_, si) { refreshCount(si); });
+  updateProgress();
+  saveToFirebase();
+}
+
+// ── SECTIONS & TASKS ─────────────────────────────────────
 function toggleCollapse(si) {
   collapsed[si] = !collapsed[si];
   var sec = document.getElementById('section-' + si);
@@ -416,18 +464,6 @@ function updateProgress() {
   document.getElementById('pl').textContent = done + ' / ' + total;
 }
 
-function resetAll() {
-  if (!isAdmin) return;
-  checked = {};
-  // Reset all task visuals
-  document.querySelectorAll('.task').forEach(function(el) {
-    applyTaskStyle(el, false);
-  });
-  var sections = SECTIONS[lang];
-  for (var si = 0; si < sections.length; si++) refreshCount(si);
-  updateProgress();
-}
-
 function setLang(l) {
   lang = l;
   document.getElementById('btn-de').classList.toggle('active', l === 'de');
@@ -439,6 +475,7 @@ function setLang(l) {
   document.getElementById('lbl-departure').textContent = u.lblDeparture;
   document.getElementById('banner-arrival-label').textContent = u.lblArrival;
   document.getElementById('banner-departure-label').textContent = u.lblDeparture;
+  document.getElementById('readonly-banner').textContent = u.readonly;
   updateBanners();
   render();
 }
@@ -491,8 +528,6 @@ function render() {
       for (var ti2 = 0; ti2 < ph.tasks.length; ti2++) {
         var task = ph.tasks[ti2];
         var id = si + '-' + pi2 + '-' + ti2;
-        var isChecked = !!checked[id];
-
         var el = document.createElement('div');
         el.className = 'task';
         el.id = 't-' + id;
@@ -500,14 +535,10 @@ function render() {
           '<div class="task-cb"></div>' +
           '<div class="task-body"><div class="task-text">' + task.text + '</div>' +
           (task.note ? '<span class="task-note">' + task.note + '</span>' : '') + '</div>';
-
-        // Apply initial visual state immediately
-        applyTaskStyle(el, isChecked);
-
+        applyTaskStyle(el, !!checked[id]);
         (function(taskId) {
           el.addEventListener('click', function(e) { handleTaskClick(taskId, e); });
         })(id);
-
         body.appendChild(el);
       }
     }
@@ -517,14 +548,70 @@ function render() {
   updateProgress();
 }
 
+// ── DATA ─────────────────────────────────────────────────
+var SECTIONS = {
+  de: [
+    { mode: 'arrival', title: 'Terrasse – Vor Ankunft', phases: [{ label: '', tasks: [
+      { text: 'Schutzbezüge entfernen, Sitzmöbel aufstellen', note: 'Position gemäß Foto' },
+      { text: 'Sonnenschirme aufstellen — nicht aufspannen' },
+      { text: 'Terrasse nass wischen' },
+      { text: 'Alle Glas- und Fensterflächen putzen' },
+      { text: 'Grillkammer feucht entstauben' },
+    ]}]},
+    { mode: 'arrival', title: 'Gästebad & WC', phases: [{ label: '', tasks: [{ text: 'Badezimmer und WC putzen' }]}]},
+    { mode: 'arrival', title: 'Gästezimmer 1', phases: [{ label: '', tasks: [{ text: 'Terrassentürverglasung putzen' }, { text: 'Neue Bettwäsche aufziehen' }]}]},
+    { mode: 'arrival', title: 'Gästezimmer 2', phases: [{ label: '', tasks: [{ text: 'Verglasung putzen' }, { text: 'Neue Bettwäsche aufziehen' }]}]},
+    { mode: 'arrival', title: 'Master Bedroom', phases: [{ label: '', tasks: [{ text: 'Verglasung der Schiebetüren putzen' }, { text: 'Neue Bettwäsche aufziehen', note: 'Tagesdecke nicht waschen!' }]}]},
+    { mode: 'arrival', title: 'Master Bad & WC', phases: [{ label: '', tasks: [{ text: 'Badezimmer und WC putzen' }, { text: 'Duschverglasung innen und außen putzen' }]}]},
+    { mode: 'arrival', title: 'Eingangsbereich', phases: [{ label: '', tasks: [{ text: 'Türblatt feucht wischen' }, { text: 'Patio fegen' }]}]},
+    { mode: 'departure', title: 'Terrasse – Nach Abreise', phases: [{ label: '', tasks: [{ text: 'Sitzmöbel und Tische mit Schutzbezug abdecken' }, { text: 'Sonnenschirme in Grillkammer verstauen' }, { text: 'Grill reinigen' }]}]},
+    { mode: 'departure', title: 'Küche – Nach Abreise', phases: [{ label: '', tasks: [{ text: 'Kühlschrank ausräumen und reinigen' }]}]},
+  ],
+  es: [
+    { mode: 'arrival', title: 'Terraza – Antes de la llegada', phases: [{ label: '', tasks: [
+      { text: 'Retirar fundas y colocar los muebles de jardín', note: 'Posición según foto' },
+      { text: 'Colocar las sombrillas — sin abrir' },
+      { text: 'Fregar la terraza con agua' },
+      { text: 'Limpiar todos los cristales y ventanas' },
+      { text: 'Despolvar en húmedo el compartimento de la barbacoa' },
+    ]}]},
+    { mode: 'arrival', title: 'Baño & WC invitados', phases: [{ label: '', tasks: [{ text: 'Limpiar baño y WC' }]}]},
+    { mode: 'arrival', title: 'Habitación invitados 1', phases: [{ label: '', tasks: [{ text: 'Limpiar el cristal de la puerta de la terraza' }, { text: 'Cambiar la ropa de cama' }]}]},
+    { mode: 'arrival', title: 'Habitación invitados 2', phases: [{ label: '', tasks: [{ text: 'Limpiar cristales' }, { text: 'Cambiar la ropa de cama' }]}]},
+    { mode: 'arrival', title: 'Dormitorio principal', phases: [{ label: '', tasks: [{ text: 'Limpiar cristal de las puertas correderas' }, { text: 'Cambiar la ropa de cama', note: '¡No lavar el cubrecama!' }]}]},
+    { mode: 'arrival', title: 'Baño & WC principal', phases: [{ label: '', tasks: [{ text: 'Limpiar baño y WC' }, { text: 'Limpiar cristal de la ducha por dentro y por fuera' }]}]},
+    { mode: 'arrival', title: 'Entrada', phases: [{ label: '', tasks: [{ text: 'Limpiar la puerta con paño húmedo' }, { text: 'Barrer el patio' }]}]},
+    { mode: 'departure', title: 'Terraza – Después de la salida', phases: [{ label: '', tasks: [{ text: 'Cubrir sillas y mesas con sus fundas' }, { text: 'Guardar sombrillas en el compartimento de la barbacoa' }, { text: 'Limpiar la barbacoa' }]}]},
+    { mode: 'departure', title: 'Cocina – Después de la salida', phases: [{ label: '', tasks: [{ text: 'Vaciar y limpiar el frigorífico' }]}]},
+  ]
+};
+
+var UI = {
+  de: { wordmark: 'Putzplan', reset: 'Zurücksetzen', lblArrival: 'Anreise', lblDeparture: 'Abreise',
+    today: 'Heute', tomorrow: 'Morgen', yesterday: 'Gestern',
+    inDays: function(n){ return 'in ' + n + ' Tagen'; },
+    daysAgo: function(n){ return 'vor ' + n + ' Tagen'; },
+    fmt: function(d){ return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    readonly: '👁 Nur Ansicht'
+  },
+  es: { wordmark: 'Plan de Limpieza', reset: 'Reset', lblArrival: 'Llegada', lblDeparture: 'Salida',
+    today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
+    inDays: function(n){ return 'en ' + n + ' días'; },
+    daysAgo: function(n){ return 'hace ' + n + ' días'; },
+    fmt: function(d){ return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    readonly: '👁 Solo lectura'
+  }
+};
+
 // Init
 var u0 = UI[lang];
 document.getElementById('wordmark').textContent = u0.wordmark;
+document.getElementById('reset-btn').textContent = u0.reset;
 document.getElementById('lbl-arrival').textContent = u0.lblArrival;
 document.getElementById('lbl-departure').textContent = u0.lblDeparture;
 document.getElementById('banner-arrival-label').textContent = u0.lblArrival;
 document.getElementById('banner-departure-label').textContent = u0.lblDeparture;
-document.getElementById('reset-btn').textContent = u0.reset;
+document.getElementById('readonly-banner').textContent = u0.readonly;
 applyAdminState();
 render();
 </script>
